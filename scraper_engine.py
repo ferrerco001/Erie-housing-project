@@ -16,7 +16,7 @@ class ErieDataClient:
         url = f"https://{self.zillow_host}/search/byaddress"
 
         all_pages_props = []
-        MAX_PAGES = 3
+        MAX_PAGES = 5
         current_page = 1
 
         headers = {
@@ -45,7 +45,7 @@ class ErieDataClient:
                         break
 
 
-                    all_pages_props.extend(page_props)
+                    all_pages_props.extend(data.get('searchResults', []))
 
 
                     current_page += 1
@@ -94,6 +94,3 @@ class ErieDataClient:
 if __name__ == '__main__':
     client = ErieDataClient()
     data = client.get_all_data()
-
-    print(f"houses on sale {len(data['sales'])}")
-    print(f"houses on rental {len(data['rentals'])}")
