@@ -63,7 +63,7 @@ class ErieDataClient:
     def fetch_rentcast(self):
         url = "https://api.rentcast.io/v1/properties"
 
-        query = {"city" : "Erie", "state" : "PA", "limit": 25}
+        query = {"city" : "Erie", "state" : "PA", "limit": 40}
 
         headers = {
             "accept": "application/json",
