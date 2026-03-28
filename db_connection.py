@@ -1,26 +1,44 @@
 import os
 from dotenv import load_dotenv
-from supabase import create_client
+from supabase import create_client, Client
 
-class ConnectionDB:
+class supabaseManager:
     def __init__(self):
         load_dotenv()
+        url = os.getenv("SUPABASE_URL")
+        key = os.getenv("SUPABASE_API_KEY")
+        self.supabase : Client = create_client(url, key)
 
-    def connectionSupabase(self):
-        url = os.getenv('SUPABASE_URL')
-        api_key = os.getenv('SUPABASE_API_KEY')
+    def insertProperties(self, properties):
 
-        supabase = create_client(url, api_key)
+        if not properties:
+            return
 
-        return supabase
+        try:
+            response = self.supabase.table("properties").upsert(properties, on_conflict="zillow_id").execute()
 
-try:
-    test = ConnectionDB()
-    client = test.connectionSupabase()
-    print(test.connectionSupabase())
+            return response
 
-    response = client.table('properties').select('id').limit(1).execute()
-    print('Successful connection')
+        except Exception as e:
+            print(f"Error in the upsert: {e}")
 
-except Exception as e:
-    print(f'Error {e}')
+    def insertPriceHistory(self, properties_prices):
+
+        if not properties_prices:
+            return
+
+        try:
+            self.supabase.table('price_history').insert(properties_prices).execute()
+
+        except Exception as e:
+            print(f"Error inserting in pricce_history {e}")
+
+    def get_id_mapping(self):
+
+        try:
+            response = self.supabase.table("properties").select("id, zillow_id").execute()
+            return {item['zillow_id']: item['id'] for item in response.data}
+
+        except Exception as e:
+            print(f" Error getting IDs: {e}")
+            return {}
