@@ -12,6 +12,13 @@ class DataProcessor:
             property_data = p.get('property', {})
 
             try:
+
+                beds = float(property_data.get('bedrooms', 0))
+                addr = str(property_data.get('address', {}).get('streetAddress', '')).lower()
+
+                if beds > 10 or "investment" in addr or "package" in addr:
+                    continue
+
                 data = {
                     "zillow_id" : str(property_data.get('zpid')),
                     "address" : str(property_data.get('address', {}).get('streetAddress')),
@@ -37,6 +44,12 @@ class DataProcessor:
         for p in raw_rents:
 
             try:
+                beds = float(p.get('bedrooms', 0))
+                addr = str(p.get('address', '')).lower()
+
+                if beds > 10 or "investment" in addr or "package" in addr:
+                    continue
+
                 data = {
                     "zillow_id" : str(p.get('id')),
                     "address" : str(p.get('addressLine1')),
