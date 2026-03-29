@@ -7,7 +7,19 @@ class supabaseManager:
         load_dotenv()
         url = os.getenv("SUPABASE_URL")
         key = os.getenv("SUPABASE_API_KEY")
-        self.supabase : Client = create_client(url, key)
+
+        if not url or not key:
+            print("Credentials not found in github")
+            print(f"DEBUG: URL presente: {bool(url)}, Key presente: {bool(key)}")
+            # No intentamos crear el cliente si no hay datos
+            self.supabase = None
+            return
+
+        try:
+            self.supabase: Client = create_client(url, key)
+        except Exception as e:
+            print(f"Error connecting to supabase: {e}")
+            self.supabase = None
 
     def insertProperties(self, properties):
 
