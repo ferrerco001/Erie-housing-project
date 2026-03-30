@@ -2,6 +2,7 @@ from models import PropertyModel
 from geopy.geocoders import Nominatim
 from geopy.exc import GeopyError
 import time
+import re
 
 class DataProcessor:
 
@@ -11,7 +12,9 @@ class DataProcessor:
     def get_coordinates(self, address):
 
         try:
-            location = self.geolocator.geocode(f"{address}, Erie, PA", timeout=10)
+            clean_address = re.split(r'\s+(?i:apt|unit|ste|#|suite)\b', address)[0]
+
+            location = self.geolocator.geocode(f"{clean_address}, Erie, PA", timeout=10)
             if location:
                 return location.latitude, location.longitude
 
