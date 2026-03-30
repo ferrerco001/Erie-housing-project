@@ -1,9 +1,26 @@
 from models import PropertyModel
+from geopy.geocoders import Nominatim
+from geopy.exc import GeopyError
+import time
 
 class DataProcessor:
 
-    @staticmethod
-    def process_zillow(raw_sales):
+    def __init__(self):
+        self.geolocator = Nominatim(user_agent="erie-housing-pipeline")
+
+    def get_coordinates(self, address):
+
+        try:
+            location = self.geolocator.geocode(f"{address}, Erie, PA", timeout=10)
+            if location:
+                return location.latitude, location.longitude
+
+        except GeopyError as e:
+            print(f"Error getting location {e}")
+
+        return None, None
+
+    def process_zillow(self, raw_sales):
 
         clean_properties = []
 
@@ -19,6 +36,9 @@ class DataProcessor:
                 if beds > 10 or "investment" in addr or "package" in addr:
                     continue
 
+                lat, lon = self.get_coordinates(addr)
+                time.sleep(1)
+
                 data = {
                     "zillow_id" : str(property_data.get('zpid')),
                     "address" : str(property_data.get('address', {}).get('streetAddress')),
@@ -28,7 +48,9 @@ class DataProcessor:
                     "bedrooms" : float(property_data.get('bedrooms', 0)),
                     "bathrooms" : float(property_data.get('bathrooms', 0)),
                     "property_type" : str(property_data.get('propertyType', 'Unknown')),
-                    "listing_type" : 'Sale'
+                    "listing_type" : 'Sale',
+                    "latitude" : lat,
+                    "longitude" : lon
                 }
 
                 clean_properties.append(PropertyModel(**data).model_dump())
@@ -36,8 +58,7 @@ class DataProcessor:
                 print(f"Skipping property: {e}")
         return clean_properties
 
-    @staticmethod
-    def process_rentCast(raw_rents):
+    def process_rentCast(self, raw_rents):
 
         clean_properties = []
 
@@ -50,6 +71,9 @@ class DataProcessor:
                 if beds > 10 or "investment" in addr or "package" in addr:
                     continue
 
+                lat, lon = self.get_coordinates(addr)
+                time.sleep(1)
+
                 data = {
                     "zillow_id" : str(p.get('id')),
                     "address" : str(p.get('addressLine1')),
@@ -59,7 +83,9 @@ class DataProcessor:
                     "bedrooms" : float(p.get('bedrooms', 0)),
                     "bathrooms" : float(p.get('bathrooms', 0)),
                     "property_type" : str(p.get('propertyType', 'Unknown')),
-                    "listing_type" : 'Rent'
+                    "listing_type" : 'Rent',
+                    "latitude" : lat,
+                    "longitude" : lon
                 }
 
                 clean_properties.append(PropertyModel(**data).model_dump())
