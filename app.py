@@ -19,6 +19,9 @@ def load_data():
 
     df = df[df['price'] > 0]
 
+    df['latitude'] = pd.to_numeric(df['latitude'])
+    df['longitude'] = pd.to_numeric(df['longitude'])
+
     return df
 
 @st.cache_data
@@ -84,12 +87,12 @@ with tab1:
 with tab2:
     st.subheader("Locatoin of properties")
 
-    map_data = get_coords(df_filtered['address'].tolist())
+    df_map = df_filtered.dropna(subset=['latitude', 'longitude'])
 
-    if not map_data.empty:
-        st.map(map_data)
+    if not df_map.empty:
+        st.map(df_map[['latitude', 'longitude']])
     else:
-        st.info("Loading coordenates")
+        st.warning("No coordinates available")
 
 with tab3:
     st.subheader("Properties explorer")
