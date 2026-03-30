@@ -17,8 +17,6 @@ def load_data():
     response = db.supabase.table('properties').select('*').execute()
     df = pd.DataFrame(response.data)
 
-    df = df[df['zip_code'] != '0']
-
     df = df[df['price'] > 0]
 
     return df
