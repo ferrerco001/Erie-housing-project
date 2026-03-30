@@ -15,6 +15,8 @@ class PropertyModel(BaseModel):
     bedrooms : Optional[float] = 0.0
     bathrooms : Optional[float] = 0.0
     property_type : Optional[str]
+    latitude : Optional[float]
+    longitude : Optional[float]
 
     #Financial info
     price : int = Field(gt=0)
