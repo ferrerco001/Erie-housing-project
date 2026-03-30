@@ -9,14 +9,20 @@ class DataProcessor:
     def __init__(self):
         self.geolocator = Nominatim(user_agent="erie-housing-pipeline")
 
-    def get_coordinates(self, address):
+    def get_coordinates(self, address, zip_code=None):
 
         try:
             clean_address = re.split(r'\s+(?i:apt|unit|ste|#|suite)\b', address)[0]
+            query = f"{clean_address.strip()}, Erie, PA"
+            location = self.geolocator.geocode(query, timeout=10)
 
-            location = self.geolocator.geocode(f"{clean_address}, Erie, PA", timeout=10)
             if location:
                 return location.latitude, location.longitude
+
+            if zip_code:
+                location_zip = self.geolocator.geocode(f"{zip_code}, PA", timeout=10)
+                if location_zip:
+                    return location_zip.latitude, location_zip.longitude
 
         except GeopyError as e:
             print(f"Error getting location {e}")
