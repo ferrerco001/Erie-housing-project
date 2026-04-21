@@ -1,8 +1,12 @@
 from scraper_engine import ErieDataClient
 from processor import DataProcessor
 from db_connection import supabaseManager
+from datetime  import datetime
 
 if __name__ == '__main__':
+
+    today_date = datetime.now().strftime("%Y-%m-%d")
+
     client = ErieDataClient()
     processor = DataProcessor()
 
@@ -21,16 +25,22 @@ if __name__ == '__main__':
 
         history_price_data = []
 
+        seen_properties = set()
+
         for p in clean_data:
 
+            z_id = p["zillow_id"]
             internal_id = id_map.get(p["zillow_id"])
 
-            if internal_id:
+            if internal_id and internal_id not in seen_properties:
                 history_price_data.append({
                     "property_id": internal_id,
                     "price": p["price"],
-                    "listing_type": p["listing_type"]
+                    "listing_type": p["listing_type"],
+                    "captured_at" : today_date
                 })
+
+                seen_properties.add(internal_id)
 
         if history_price_data:
             db.insertPriceHistory(history_price_data)
