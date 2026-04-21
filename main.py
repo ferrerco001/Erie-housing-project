@@ -29,6 +29,7 @@ if __name__ == '__main__':
 
         for p in clean_data:
 
+            addr = p["address"]
             z_id = p["zillow_id"]
             internal_id = id_map.get(p["zillow_id"])
 
@@ -40,7 +41,7 @@ if __name__ == '__main__':
                     "captured_at" : today_date
                 })
 
-                seen_properties.add(internal_id)
+                seen_properties.add(addr)
 
         if history_price_data:
             db.insertPriceHistory(history_price_data)

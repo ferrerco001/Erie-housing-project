@@ -47,8 +47,13 @@ def load_history():
     .execute()
     df_hist = pd.DataFrame(response.data)
 
-    df_hist['address'] = df_hist['properties'].apply(lambda x: x['address'])
-    df_hist['captured_at'] = pd.to_datetime(df_hist['captured_at'])
+    if not df_hist.empty:
+
+        df_hist['address'] = df_hist['properties'].apply(lambda x: x['address'])
+
+        df_hist['captured_at'] = pd.to_datetime(df_hist['captured_at'], format = 'ISO8601', utc=True)
+
+        df_hist['captured_at'] = df_hist['captured_at'].dt.tz_localize(None)
 
     return df_hist
 
