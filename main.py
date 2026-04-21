@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
         for p in clean_data:
 
-            addr = p["address"]
+            addr = str(p["address"]).strip().lower()
             z_id = p["zillow_id"]
             internal_id = id_map.get(p["zillow_id"])
 
