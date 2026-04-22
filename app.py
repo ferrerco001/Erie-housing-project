@@ -76,6 +76,17 @@ bedrooms_filter = st.sidebar.number_input('Bedrooms', step=1)
 bathrooms_filter = st.sidebar.number_input('Bathrooms', step=1)
 
 st.sidebar.write("---")
+st.sidebar.subheader('Location')
+
+with st.sidebar.expander("Filter by Zip Code"):
+    all_zips = sorted(df['zip_code'].unique())
+    selected_zips = st.multiselect(
+        "Select zones:",
+        options=all_zips,
+        default=all_zips
+    )
+
+st.sidebar.write("---")
 st.sidebar.subheader("Property type")
 
 unique_types = sorted(df['property_type'].unique().tolist())
@@ -104,10 +115,12 @@ for i, p_type in enumerate(unique_types):
             st.session_state.selected_types.append(p_type)
         st.rerun()
 
-df_filtered = df[(df['listing_type'].isin(listing_filter)) &
-                 (df['price'].between(price_range[0], price_range[1])) &
-                 (df['bedrooms'] >= bedrooms_filter) &
-                 (df['bathrooms'] >= bathrooms_filter)]
+df_filtered = df[
+    (df['listing_type'].isin(listing_filter)) &
+    (df['price'].between(price_range[0], price_range[1])) &
+    (df['bedrooms'] >= bedrooms_filter) &
+    (df['bathrooms'] >= bathrooms_filter) &
+    (df['zip_code'].isin(selected_zips))]
 
 df_filtered = df_filtered[df_filtered['property_type'].isin(st.session_state.selected_types)]
 
@@ -133,7 +146,20 @@ with tab1:
         st.metric("Average price of rent", f"${avg_price_rent:.0f}")
 
     st.subheader("Properties by zipcode")
-    zip_chart = px.bar(df_filtered['zip_code'].value_counts(), labels={'value' : 'amount', 'index' : 'zip_code'})
+
+    zip_data = df_filtered.groupby(['zip_code', 'listing_type']).size().reset_index(name='amount')
+
+    zip_data['zip_code'] = zip_data['zip_code'].astype(str)
+
+    zip_chart = px.bar(zip_data,
+                       x='zip_code',
+                       y='amount',
+                       color='listing_type',
+                       barmode='stack',
+                       labels={'amount' : 'Amount', 'zip_code' : 'Zip Code', 'listing_type' : 'Listing Type'})
+
+    zip_chart.update_xaxes(type='category')
+
     st.plotly_chart(zip_chart, use_container_width=True)
 
 
@@ -157,46 +183,77 @@ with tab3:
 with tab4:
     st.subheader("Oportunity searcher")
 
-    option = st.selectbox("Select the zipcode: ", options=sorted(df['zip_code'].unique()))
+    active_zips = sorted(df_filtered['zip_code'].unique())
 
-    avg_in_zipcode_rent = round(df[(df['zip_code'] == option) & (df['listing_type'] == 'Rent')]['price'].mean(), 2)
-    avg_in_zipcode_sale = round(df[(df['zip_code'] == option) & (df['listing_type'] == 'Sale')]['price'].mean(), 2)
+    if not active_zips:
+        st.warning("No zipcodes selected")
+    else:
+        option = st.selectbox("Deep dive into a specific Zip Code:", options=active_zips)
 
-    col1, col2 = st.columns(2)
+        avg_in_zipcode_rent = round(df[(df['zip_code'] == option) & (df['listing_type'] == 'Rent')]['price'].mean(), 2)
+        avg_in_zipcode_sale = round(df[(df['zip_code'] == option) & (df['listing_type'] == 'Sale')]['price'].mean(), 2)
 
-    with col1:
+        col1, col2 = st.columns(2)
 
-        st.metric("Average price of sale", f"${avg_in_zipcode_sale:.0f}")
+        with col1:
 
-        opportunities_sale = df[(df['price'] < avg_in_zipcode_sale) & (df['listing_type'] == 'Sale') & (df['zip_code'] == option)]
+            st.metric("Average price of sale", f"${avg_in_zipcode_sale:.0f}")
+
+            opportunities_sale = df[(df['price'] < avg_in_zipcode_sale) & (df['listing_type'] == 'Sale') & (df['zip_code'] == option)]
 
 
-        st.dataframe(opportunities_sale[['address', 'bedrooms', 'bathrooms', 'price']].sort_values('price').head(5))
+            st.dataframe(opportunities_sale[['address', 'bedrooms', 'bathrooms', 'price']].sort_values('price').head(5))
 
-    with col2:
+        with col2:
 
-        st.metric("Average price of rent", f"${avg_in_zipcode_rent:.0f}")
+            st.metric("Average price of rent", f"${avg_in_zipcode_rent:.0f}")
 
-        opportunities_rent = df[(df['price'] < avg_in_zipcode_rent) & (df['listing_type'] == 'Rent') & (df['zip_code'] == option)]
+            opportunities_rent = df[(df['price'] < avg_in_zipcode_rent) & (df['listing_type'] == 'Rent') & (df['zip_code'] == option)]
 
-        st.dataframe(opportunities_rent[['address', 'bedrooms', 'bathrooms', 'price']].sort_values('price').head(5))
+            st.dataframe(opportunities_rent[['address', 'bedrooms', 'bathrooms', 'price']].sort_values('price').head(5))
 
+df_history = load_history()
 
 with tab5:
     st.subheader("Properties price trends")
 
-    df_history = load_history()
-    st.write(f"Última fecha detectada en el historial: {df_history['captured_at'].max()}")
 
-    selected_address = st.selectbox("Search address to see history: ", options=df_history['address'].unique())
+    st.write(f"Last date registered in history: {df_history['captured_at'].max().strftime('%B %d %Y')}")
+
+    selected_address = st.selectbox("Search address to see history: ",
+                                    options=sorted(df_filtered['address'].unique()),
+                                    help="Type to search for a specific address")
 
     property_history = df_history[df_history['address'] == selected_address].sort_values('captured_at')
 
-    if len(property_history) > 1:
-        fig = px.line(property_history, x='captured_at', y='price',
-                      title=f"Price history for {selected_address}",
-                      markers=True, labels={'captured_at': 'Date', 'price' : 'Price ($)'})
-        st.plotly_chart(fig, use_container_width=True)
+    if property_history.empty:
+        st.warning(f"No historical record for {selected_address}")
+        st.info("The property is in the database and the price will be updated in the next week")
 
     else:
-        st.info("This property only has one price record yet. Trends will appear as we collect more data")
+
+        current_price = float(property_history['price'].iloc[-1])
+
+        col1, col2 = st.columns([1, 2])
+
+        with col1:
+
+            if len(property_history) > 1:
+
+                last_price = float(property_history['price'].iloc[-2])
+                delta = current_price - last_price
+                st.metric("Current market price", f"${current_price:,.0f}", delta=f"${delta:,.0f}")
+
+            else:
+                st.metric("Current Market Price", f"${current_price:,.0f}")
+
+        with col2:
+            if len(property_history) > 1:
+                fig = px.line(property_history, x='captured_at', y='price',
+                            title=f"Price history for {selected_address}",
+                            markers=True, labels={'captured_at': 'Date', 'price' : 'Price ($)'})
+                fig.update_layout(hovermode="x unified")
+                st.plotly_chart(fig, use_container_width=True)
+
+            else:
+                st.info("This property only has one price record yet. Trends will appear as we collect more data")
