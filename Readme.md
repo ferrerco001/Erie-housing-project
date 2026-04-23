@@ -4,7 +4,7 @@
 
 A professional-grade **Data Engineering Pipeline** designed to monitor and analyze the real estate market in Erie, PA. This system automates data extraction from multiple APIs, cleanses and normalizes records, maintains a historical price database, and visualizes investment opportunities through an interactive dashboard.
 
-![Dashboard Preview](assets/dashboard_preview.png) <!-- Agrega aquí una captura de tu dashboard -->
+![Dashboard Preview](assets/dashboard_map.png) <!-- Agrega aquí una captura de tu dashboard -->
 
 ##  Key Features
 
@@ -12,6 +12,9 @@ A professional-grade **Data Engineering Pipeline** designed to monitor and analy
 *   **Price History Tracking:** Custom persistence logic that tracks price fluctuations over time for each property, enabling time-series market analysis.
 *   **Data Integrity & Validation:** Rigorous data cleaning using **Pydantic** models to ensure type safety and schema consistency before database ingestion.
 *   **Investment Opportunity Engine:** A dynamic tool that identifies properties listed below the local ZIP code average, helping investors find high-value deals.
+
+###  Data-Driven Insights
+![Investment Opportunities](assets/opportunities.png)
 
 ##  Tech Stack
 
@@ -34,6 +37,9 @@ A professional-grade **Data Engineering Pipeline** designed to monitor and analy
 *   **Deduplication Logic:** Implemented a robust filtering system using Python `sets` and address normalization to prevent redundant entries from multiple API sources.
 *   **Temporal Consistency:** Standardized date formats to ISO8601, resolving conflicts between cloud database timestamps and Pandas datetime objects.
 *   **Geocoding Optimization:** Developed a custom address-cleaning regex to improve coordinate accuracy and handled API rate limits using a controlled sleep mechanism.
+
+### 📈 Historical Tracking
+![Price Trends](assets/trends.png)
 
 ##  Project Structure
 
