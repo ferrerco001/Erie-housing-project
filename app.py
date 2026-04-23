@@ -125,7 +125,7 @@ df_filtered = df[
 df_filtered = df_filtered[df_filtered['property_type'].isin(st.session_state.selected_types)]
 
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["Market analysis", "Interactive map", "Data explorer", "Oportunity searcher", "Price evolution"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["Market analysis", "Interactive map", "Data explorer", "Opportunity searcher", "Price evolution"])
 
 with tab1:
 
@@ -181,7 +181,7 @@ with tab3:
 
 
 with tab4:
-    st.subheader("Oportunity searcher")
+    st.subheader("Opportunity searcher")
 
     active_zips = sorted(df_filtered['zip_code'].unique())
 
@@ -197,18 +197,18 @@ with tab4:
 
         with col1:
 
-            st.metric("Average price of sale", f"${avg_in_zipcode_sale:.0f}")
+            st.metric("Average price of sale", f"${avg_in_zipcode_sale:,.0f}")
 
-            opportunities_sale = df[(df['price'] < avg_in_zipcode_sale) & (df['listing_type'] == 'Sale') & (df['zip_code'] == option)]
+            opportunities_sale = df_filtered[(df_filtered['price'] < avg_in_zipcode_sale) & (df_filtered['listing_type'] == 'Sale') & (df_filtered['zip_code'] == option)]
 
 
             st.dataframe(opportunities_sale[['address', 'bedrooms', 'bathrooms', 'price']].sort_values('price').head(5))
 
         with col2:
 
-            st.metric("Average price of rent", f"${avg_in_zipcode_rent:.0f}")
+            st.metric("Average price of rent", f"${avg_in_zipcode_rent:,.0f}")
 
-            opportunities_rent = df[(df['price'] < avg_in_zipcode_rent) & (df['listing_type'] == 'Rent') & (df['zip_code'] == option)]
+            opportunities_rent = df_filtered[(df_filtered['price'] < avg_in_zipcode_rent) & (df_filtered['listing_type'] == 'Rent') & (df_filtered['zip_code'] == option)]
 
             st.dataframe(opportunities_rent[['address', 'bedrooms', 'bathrooms', 'price']].sort_values('price').head(5))
 
