@@ -33,7 +33,7 @@ if __name__ == '__main__':
             z_id = p["zillow_id"]
             internal_id = id_map.get(p["zillow_id"])
 
-            if internal_id and internal_id not in seen_properties:
+            if internal_id and addr not in seen_properties:
                 history_price_data.append({
                     "property_id": internal_id,
                     "price": p["price"],
