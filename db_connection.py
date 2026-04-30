@@ -11,7 +11,7 @@ class supabaseManager:
         if not url or not key:
             print("Credentials not found in github")
             print(f"DEBUG: URL presente: {bool(url)}, Key presente: {bool(key)}")
-            # No intentamos crear el cliente si no hay datos
+
             self.supabase = None
             return
 
