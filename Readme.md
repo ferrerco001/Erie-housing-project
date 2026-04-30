@@ -77,6 +77,3 @@ A **data engineering pipeline** designed to monitor and analyze the real estate 
 4. **Run the Application:**
    *   To trigger the pipeline: `python main.py`
    *   To launch the dashboard: `streamlit run app.py`
-
----
-Developed by Pau Ferrer Collado
