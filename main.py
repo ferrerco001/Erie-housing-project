@@ -29,7 +29,12 @@ if __name__ == '__main__':
 
         for p in clean_data:
 
-            addr = str(p["address"]).strip().lower()
+            addr_raw = str(p["address"]).strip().lower()
+
+            if not addr_raw or "undisclosed" in addr_raw.lower():
+                continue
+
+            addr = addr_raw.lower()
             z_id = p["zillow_id"]
             internal_id = id_map.get(p["zillow_id"])
 
