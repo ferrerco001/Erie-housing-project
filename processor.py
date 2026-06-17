@@ -35,7 +35,10 @@ class DataProcessor:
 
         for p in raw_sales:
 
-            property_data = p.get('property', {})
+            property_data = p.get('property', {}) if isinstance(p, dict) else {}
+
+            if not property_data:
+                continue
 
             try:
 
@@ -72,6 +75,9 @@ class DataProcessor:
         clean_properties = []
 
         for p in raw_rents:
+
+            if not isinstance(p, dict):
+                continue
 
             try:
                 beds = float(p.get('bedrooms', 0))

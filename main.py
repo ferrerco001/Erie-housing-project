@@ -7,10 +7,15 @@ if __name__ == '__main__':
 
     today_date = datetime.now().strftime("%Y-%m-%d")
 
+    db = supabaseManager()
+
+    old_sales_ids = db.getOldSaleID(limit = 30)
+    old_rentals_ids = db.getOldRentalID(limit = 30)
+
     client = ErieDataClient()
     processor = DataProcessor()
 
-    raw_data = client.get_all_data()
+    raw_data = client.get_all_data(old_sale_ids = old_sales_ids, old_rental_ids = old_rentals_ids)
 
     clean_sales = processor.process_zillow(raw_data.get('sales', []))
     clean_rents = processor.process_rentCast(raw_data.get('rentals', []))

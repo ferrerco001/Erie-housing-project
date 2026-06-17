@@ -12,11 +12,11 @@ class ErieDataClient:
         self.rentcast_key = os.getenv("RENTCAST_API_KEY")
         self.rentcast_url = "https://api.rentcast.io"
 
-    def fetch_zillow_sales(self):
+    def fetchZillowSalesNew(self):
         url = f"https://{self.zillow_host}/search/byaddress"
 
         all_pages_props = []
-        MAX_PAGES = 5
+        MAX_PAGES = 3
         current_page = 1
 
         headers = {
@@ -60,10 +60,36 @@ class ErieDataClient:
 
         return all_pages_props
 
-    def fetch_rentcast(self):
+    def fetchZillowSaleById(self, zpid):
+
+        url = f"https://{self.zillow_host}/property"
+
+        headers = {
+            "x-rapidapi-key": self.zillow_key,
+            "x-rapidapi-host": self.zillow_host
+        }
+
+        query = {"zpid": str(zpid)}
+
+        try:
+            response = requests.get(url, headers=headers, params=query, timeout=15)
+            if response.status_code == 200:
+
+                data = response.json()
+                return {"property": data} if isinstance(data, dict) else data
+
+            print(f"Error Zillow ID {zpid}: {response.status_code}")
+
+            return None
+
+        except Exception as e:
+            print(f'Exception Zillow ID {zpid}: {e}')
+            return None
+
+    def fetchRentcastNew(self):
         url = "https://api.rentcast.io/v1/listings/rental/long-term"
 
-        query = {"city" : "Erie", "state" : "PA", "limit": 50}
+        query = {"city" : "Erie", "state" : "PA", "limit": 30}
 
         headers = {
             "accept": "application/json",
@@ -81,14 +107,50 @@ class ErieDataClient:
         except Exception as e:
             print(f'exception {e}')
 
-    def get_all_data(self):
+    def fetchRentcastByID(self, property_id):
 
-        sales_data = self.fetch_zillow_sales()
-        rent_data = self.fetch_rentcast()
+        url = f"{self.rentcast_url}/v1/listings/rental/long-term/{property_id}"
+
+        headers = {
+            "accept": "application/json",
+            "X-Api-Key": self.rentcast_key
+        }
+
+        try:
+            response = requests.get(url, headers=headers, timeout=15)
+
+            if response.status_code == 200:
+                return response.json()
+
+            print(f"Error RentCast ID {property_id}: {response.status_code}")
+            return None
+
+        except Exception as e:
+            print(f'Exception RentCast ID {property_id}: {e}')
+            return None
+
+    def get_all_data(self, old_sale_ids=None, old_rental_ids=None):
+
+        sales_data = self.fetchZillowSalesNew()
+        rentals_data = self.fetchRentcastNew()
+
+        if old_sale_ids:
+
+            for zpid in old_sale_ids[:30]:
+                updated_sale = self.fetchZillowSaleById(zpid)
+                if updated_sale:
+                    sales_data.append(updated_sale)
+
+        if old_rental_ids:
+
+            for pid in old_rental_ids[:30]:
+                updated_rental = self.fetchRentcastByID(pid)
+                if updated_rental:
+                    rentals_data.append(updated_rental)
 
         return {
             "sales" : sales_data,
-            "rentals" : rent_data
+            "rentals" : rentals_data
         }
 
 if __name__ == '__main__':
