@@ -1,7 +1,8 @@
+import time
 from scraper_engine import ErieDataClient
 from processor import DataProcessor
 from db_connection import supabaseManager
-from datetime  import datetime
+from datetime import datetime
 
 if __name__ == '__main__':
 
@@ -23,13 +24,11 @@ if __name__ == '__main__':
     clean_data = clean_rents + clean_sales
 
     if clean_data:
-        db = supabaseManager()
 
         db.insertProperties(clean_data)
         id_map = db.get_id_mapping()
 
         history_price_data = []
-
         seen_properties = set()
 
         for p in clean_data:
@@ -55,3 +54,20 @@ if __name__ == '__main__':
 
         if history_price_data:
             db.insertPriceHistory(history_price_data)
+
+    blind_properties = db.getPropertiesWithoutCoordinates(limit = 30)
+
+    if blind_properties:
+        success_coordinates = 0
+
+        for prop in blind_properties:
+            p_id = prop['id']
+            address = prop['address']
+
+            lat, lon = processor.get_coordinates(address)
+
+            if lat and lon:
+                db.updatePropertyCoordinates(p_id, lat, lon)
+                success_coordinates += 1
+
+            time.sleep(1.5)

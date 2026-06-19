@@ -30,7 +30,7 @@ class supabaseManager:
                 self.supabase.table("properties")
                 .select("zillow_id")
                 .eq("listing_type", "Sale")
-                .order("updated_at", nulls_first=True)
+                .order("updated_at", nullsfirst=True)
                 .limit(limit)
                 .execute()
             )
@@ -48,7 +48,7 @@ class supabaseManager:
                 self.supabase.table("properties")
                 .select("zillow_id")
                 .eq("listing_type", "Rent")
-                .order("updated_at", nulls_first=True)
+                .order("updated_at", nullsfirst=True)
                 .limit(limit)
                 .execute()
             )
@@ -96,3 +96,31 @@ class supabaseManager:
         except Exception as e:
             print(f" Error getting IDs: {e}")
             return {}
+
+    def getPropertiesWithoutCoordinates(self, limit=20):
+        if not self.supabase:
+            return []
+        try:
+            response = (
+                self.supabase.table("properties")
+                .select("id, address")
+                .is_("latitude", "null")
+                .limit(limit)
+                .execute()
+            )
+            return response.data
+        except Exception as e:
+            print(f"Error fetching properties without coordinates: {e}")
+            return []
+
+    def updatePropertyCoordinates(self, property_id, lat, lon):
+        """Actualiza la latitud y longitud de una propiedad específica en Supabase."""
+        if not self.supabase:
+            return
+        try:
+            self.supabase.table("properties").update({
+                "latitude": lat,
+                "longitude": lon
+            }).eq("id", property_id).execute()
+        except Exception as e:
+            print(f"Error updating coordinates for property {property_id}: {e}")

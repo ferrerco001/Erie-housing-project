@@ -12,7 +12,10 @@ class DataProcessor:
     def get_coordinates(self, address, zip_code=None):
 
         try:
-            clean_address = re.split(r'\s+(?i:apt|unit|ste|#|suite)\b', address)[0]
+
+            address_with_spaces = str(address).replace('-', ' ')
+
+            clean_address = re.split(r'\s+(?i:apt|unit|ste|#|suite)\b', address_with_spaces)[0]
             query = f"{clean_address.strip()}, Erie, PA"
             location = self.geolocator.geocode(query, timeout=10)
 
@@ -48,9 +51,6 @@ class DataProcessor:
                 if beds > 10 or "investment" in addr or "package" in addr:
                     continue
 
-                lat, lon = self.get_coordinates(addr)
-                time.sleep(1)
-
                 data = {
                     "zillow_id" : str(property_data.get('zpid')),
                     "address" : str(property_data.get('address', {}).get('streetAddress')),
@@ -61,8 +61,8 @@ class DataProcessor:
                     "bathrooms" : float(property_data.get('bathrooms', 0)),
                     "property_type" : str(property_data.get('propertyType', 'Unknown')),
                     "listing_type" : 'Sale',
-                    "latitude" : lat,
-                    "longitude" : lon
+                    "latitude" : None,
+                    "longitude" : None
                 }
 
                 clean_properties.append(PropertyModel(**data).model_dump())
@@ -86,9 +86,6 @@ class DataProcessor:
                 if beds > 10 or "investment" in addr or "package" in addr:
                     continue
 
-                lat, lon = self.get_coordinates(addr)
-                time.sleep(1)
-
                 data = {
                     "zillow_id" : str(p.get('id')),
                     "address" : str(p.get('addressLine1')),
@@ -99,8 +96,8 @@ class DataProcessor:
                     "bathrooms" : float(p.get('bathrooms', 0)),
                     "property_type" : str(p.get('propertyType', 'Unknown')),
                     "listing_type" : 'Rent',
-                    "latitude" : lat,
-                    "longitude" : lon
+                    "latitude" : None,
+                    "longitude" : None
                 }
 
                 clean_properties.append(PropertyModel(**data).model_dump())
