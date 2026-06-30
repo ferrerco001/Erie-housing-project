@@ -12,10 +12,11 @@ class ErieDataClient:
 
         # Fijamos los hosts estables directamente para evitar errores de concatenación en el .env
         self.zillow_host = "zllw-working-api.p.rapidapi.com"
+        self.rentcast_base_url = "https://api.rentcast.io/v1"
 
     def fetchZillowSalesNew(self):
         # Fijamos la URL completa oficial directamente en el string
-        url = "https://{self.zillow_host}/search/byaddress"
+        url = f"https://{self.zillow_host}/search/byaddress"
         all_pages_props = []
         MAX_PAGES = 3
         current_page = 1
@@ -90,7 +91,7 @@ class ErieDataClient:
 
     def fetchRentcastByID(self, property_id):
         # Fijamos el endpoint completo oficial directo de RentCast
-        url = f"{self.rentcast_url}/v1/listings/rental/long-term/{property_id}"
+        url = f"{self.rentcast_base_url}/v1/listings/rental/long-term/{property_id}"
 
         # Decodificamos y limpiamos guiones/comas de la base de datos
         decoded_address = unquote(str(property_id))
