@@ -15,7 +15,7 @@ class ErieDataClient:
 
     def fetchZillowSalesNew(self):
         # Fijamos la URL completa oficial directamente en el string
-        url = "https://rapidapi.com"
+        url = "https://{self.zillow_host}/search/byaddress"
         all_pages_props = []
         MAX_PAGES = 3
         current_page = 1
@@ -48,7 +48,7 @@ class ErieDataClient:
 
     def fetchZillowSaleById(self, zpid):
         # Fijamos la URL completa oficial directamente en el string
-        url = "https://rapidapi.com"
+        url = f"https://{self.zillow_host}/search/byaddress"
         headers = {
             "x-rapidapi-key": self.zillow_key,
             "x-rapidapi-host": self.zillow_host
@@ -72,7 +72,7 @@ class ErieDataClient:
 
     def fetchRentcastNew(self):
         # Fijamos el endpoint completo oficial directo de RentCast
-        url = "https://rentcast.io"
+        url = "https://api.rentcast.io/v1/listings/rental/long-term"
         query = {"city" : "Erie", "state" : "PA", "limit": 30}
         headers = {
             "accept": "application/json",
@@ -90,7 +90,7 @@ class ErieDataClient:
 
     def fetchRentcastByID(self, property_id):
         # Fijamos el endpoint completo oficial directo de RentCast
-        url = "https://rentcast.io"
+        url = f"{self.rentcast_url}/v1/listings/rental/long-term/{property_id}"
 
         # Decodificamos y limpiamos guiones/comas de la base de datos
         decoded_address = unquote(str(property_id))
